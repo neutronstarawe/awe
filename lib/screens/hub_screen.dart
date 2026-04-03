@@ -38,9 +38,12 @@ class HubScreen extends StatelessWidget {
             Expanded(
               child: GridView.count(
                 crossAxisCount: 2,
+                childAspectRatio: 1.6,
                 padding: const EdgeInsets.all(16),
                 mainAxisSpacing: 16,
                 crossAxisSpacing: 16,
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
                 children: [
                   _HubTile(
                     label: 'Micro Awe',
