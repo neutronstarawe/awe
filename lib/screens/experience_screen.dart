@@ -44,6 +44,7 @@ class _ExperienceScreenState extends State<ExperienceScreen> {
   }
 
   void _onVideoUpdate() {
+    if (!mounted) return;
     final value = _controller.value;
     if (!value.isPlaying &&
         value.duration > Duration.zero &&
