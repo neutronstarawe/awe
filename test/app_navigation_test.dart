@@ -17,15 +17,16 @@ void main() {
 
       await tester.pumpWidget(const AweApp());
       await tester.pump(); // process loading
-      await tester.pump(); // process prefs → SplashScreen
+      await tester.pump(); // prefs loaded → SplashScreen
 
       expect(find.byType(SplashScreen), findsOneWidget);
 
-      // Drain the 2s splash timer to avoid pending timer assertion
+      // Drain splash timer → navigates to ExperienceScreen
       await tester.pump(const Duration(seconds: 3));
-      // After splash, MontageScreen loads (which has its own timers)
-      // Just pump a bit more to clear immediate timers
-      await tester.pump(Duration.zero);
+      // Drain ExperienceScreen video init (fails on stub asset → calls completion → navigates to HubScreen)
+      for (int i = 0; i < 10; i++) {
+        await tester.pump(Duration.zero);
+      }
     });
 
     testWidgets('returning user sees HubScreen directly', (tester) async {
@@ -50,17 +51,19 @@ void main() {
       expect(find.byType(HubScreen), findsOneWidget);
     });
 
-    testWidgets('initial loading shows progress indicator', (tester) async {
+    testWidgets('initial loading shows MaterialApp', (tester) async {
       await tester.pumpWidget(const AweApp());
-      // Before prefs load, shows loading indicator
+
       expect(find.byType(MaterialApp), findsOneWidget);
-      // Clean up: pump past the splash timer if we get that far
+
+      // Clean up pending timers
       await tester.pump();
       await tester.pump();
-      // If SplashScreen is showing, drain the timer
       if (tester.any(find.byType(SplashScreen))) {
         await tester.pump(const Duration(seconds: 3));
-        await tester.pump(Duration.zero);
+        for (int i = 0; i < 10; i++) {
+          await tester.pump(Duration.zero);
+        }
       }
     });
   });
