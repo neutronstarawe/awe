@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
@@ -31,11 +32,12 @@ class _StarsScreenState extends State<StarsScreen> {
   double _lngRad = 0.0;
   bool _locationReady = false;
   String? _error;
+  StreamSubscription<SkyOrientation>? _orientationSub;
 
   @override
   void initState() {
     super.initState();
-    widget.orientationSource.stream.listen(_onOrientation);
+    _orientationSub = widget.orientationSource.stream.listen(_onOrientation);
     _initLocation();
   }
 
@@ -110,7 +112,7 @@ class _StarsScreenState extends State<StarsScreen> {
           final painter = SkyPainter(
             stars: widget.catalog.starsVisibleToNakedEye(),
             constellations: widget.catalog.constellations,
-            starById: {for (final s in widget.catalog.stars) s.id: s},
+            starById: widget.catalog.byId,
             observerLat: _latRad,
             lst: lst,
             projection: projection,
@@ -123,6 +125,7 @@ class _StarsScreenState extends State<StarsScreen> {
 
   @override
   void dispose() {
+    _orientationSub?.cancel();
     widget.orientationSource.dispose();
     super.dispose();
   }

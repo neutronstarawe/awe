@@ -11,6 +11,8 @@ class StarCatalog {
   StarCatalog({required this.stars, required this.constellations})
       : _byId = {for (final s in stars) s.id: s};
 
+  Map<int, Star> get byId => _byId;
+
   Star? starById(int id) => _byId[id];
 
   List<Star> starsVisibleToNakedEye() =>
