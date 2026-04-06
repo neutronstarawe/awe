@@ -3,7 +3,7 @@ import csv, json, urllib.request, os
 
 URL = "https://raw.githubusercontent.com/astronexus/HYG-Database/main/hyg/CURRENT/hygdata_v41.csv"
 OUT = "assets/data/stars.json"
-MAG_LIMIT = 5.5
+MAG_LIMIT = 6.0
 
 os.makedirs("assets/data", exist_ok=True)
 

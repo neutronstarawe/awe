@@ -4,9 +4,7 @@
 <dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>awe uses your location to show the correct stars for your position on Earth.</string>
-	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>awe uses your location to show the correct stars for your position on Earth.</string>
-	<key>CADisableMinimumFrameDurationOnPhone</key>
+<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
