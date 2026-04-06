@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import '../core/app_preferences.dart';
 import 'gallery_screen.dart';
 import 'experience_screen.dart';
+import '../stars/star_catalog.dart';
+import '../stars/sky_orientation.dart';
+import 'stars_screen.dart';
 
 class HubScreen extends StatelessWidget {
   final AppPreferences preferences;
@@ -126,10 +129,21 @@ class HubScreen extends StatelessWidget {
                           const SizedBox(width: 12),
                           _HubTile(
                             label: 'Stars\nSimulation',
-                            sublabel: 'Coming Soon',
+                            sublabel: 'The Sky',
                             icon: Icons.scatter_plot,
-                            onTap: null,
-                            muted: true,
+                            onTap: () async {
+                              final catalog = await StarCatalog.load(DefaultAssetBundle.of(context));
+                              if (!context.mounted) return;
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => StarsScreen(
+                                    catalog: catalog,
+                                    orientationSource: RealSkyOrientationSource(),
+                                  ),
+                                ),
+                              );
+                            },
                           ),
                         ],
                       ),

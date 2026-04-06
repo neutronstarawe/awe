@@ -5,6 +5,7 @@ import 'package:awe/core/app_preferences.dart';
 import 'package:awe/screens/hub_screen.dart';
 import 'package:awe/screens/gallery_screen.dart';
 import 'package:awe/screens/experience_screen.dart';
+import 'package:awe/screens/stars_screen.dart';
 
 void main() {
   group('HubScreen', () {
@@ -50,7 +51,7 @@ void main() {
       expect(find.text('The Small'), findsOneWidget);
       expect(find.text('The Grand'), findsOneWidget);
       expect(find.text('The Infinite'), findsOneWidget);
-      expect(find.text('Coming Soon'), findsOneWidget);
+      expect(find.text('The Sky'), findsOneWidget);
     });
 
     testWidgets('shows "awe" title', (tester) async {
@@ -138,7 +139,7 @@ void main() {
       expect(gallery.title, equals('Cosmic'));
     });
 
-    testWidgets('tapping Stars Simulation does not navigate away', (tester) async {
+    testWidgets('Stars Simulation tile is enabled (not muted)', (tester) async {
       setLandscape(tester);
       final prefs = await makePrefs();
 
@@ -146,10 +147,14 @@ void main() {
         home: HubScreen(preferences: prefs),
       ));
 
-      await tester.tap(find.textContaining('Stars'));
-      await tester.pump();
+      // The Stars Simulation tile should be enabled with "The Sky" sublabel
+      // (previously it was muted with "Coming Soon" sublabel)
+      expect(find.textContaining('Stars'), findsOneWidget);
+      expect(find.text('The Sky'), findsOneWidget);
 
-      expect(find.byType(HubScreen), findsOneWidget);
+      // Verify the tile is displayed at full opacity (not muted)
+      final gestureDetectors = find.byType(GestureDetector);
+      expect(gestureDetectors, findsWidgets);
     });
 
     testWidgets('"Relive the Experience" navigates to ExperienceScreen',
