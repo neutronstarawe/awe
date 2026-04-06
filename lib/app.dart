@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'core/audio_engine.dart';
 import 'core/app_preferences.dart';
+import 'screens/orientation_gate_screen.dart';
 import 'screens/splash_screen.dart';
 import 'screens/hub_screen.dart';
 
@@ -15,7 +14,6 @@ class AweApp extends StatefulWidget {
 }
 
 class _AweAppState extends State<AweApp> {
-  late final AudioEngine _audioEngine;
   late final AppPreferences _preferences;
   bool _initialized = false;
   bool _hasSeenIntro = false;
@@ -23,7 +21,6 @@ class _AweAppState extends State<AweApp> {
   @override
   void initState() {
     super.initState();
-    _audioEngine = AudioEngine();
     _preferences = widget.preferences ?? AppPreferences();
     _init();
   }
@@ -38,12 +35,6 @@ class _AweAppState extends State<AweApp> {
   }
 
   @override
-  void dispose() {
-    _audioEngine.disposeEngine();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     if (!_initialized) {
       return const MaterialApp(
@@ -54,23 +45,16 @@ class _AweAppState extends State<AweApp> {
       );
     }
 
-    return ChangeNotifierProvider<AudioEngine>.value(
-      value: _audioEngine,
-      child: MaterialApp(
-        title: 'awe',
-        debugShowCheckedModeBanner: false,
-        theme: ThemeData.dark().copyWith(
-          scaffoldBackgroundColor: Colors.black,
-        ),
-        home: _hasSeenIntro
-            ? HubScreen(
-                audioEngine: _audioEngine,
-                preferences: _preferences,
-              )
-            : SplashScreen(
-                audioEngine: _audioEngine,
-                preferences: _preferences,
-              ),
+    return MaterialApp(
+      title: 'awe',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData.dark().copyWith(
+        scaffoldBackgroundColor: Colors.black,
+      ),
+      home: OrientationGateScreen(
+        child: _hasSeenIntro
+            ? HubScreen(preferences: _preferences)
+            : SplashScreen(preferences: _preferences),
       ),
     );
   }
