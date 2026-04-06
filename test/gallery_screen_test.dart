@@ -4,7 +4,7 @@ import 'package:awe/screens/gallery_screen.dart';
 
 void main() {
   group('GalleryScreen', () {
-    testWidgets('shows title in AppBar', (tester) async {
+    testWidgets('has no AppBar (headerless full-screen design)', (tester) async {
       await tester.pumpWidget(const MaterialApp(
         home: GalleryScreen(
           title: 'Intricate',
@@ -12,7 +12,7 @@ void main() {
         ),
       ));
 
-      expect(find.text('Intricate'), findsOneWidget);
+      expect(find.byType(AppBar), findsNothing);
     });
 
     testWidgets('has black background', (tester) async {
@@ -41,7 +41,7 @@ void main() {
       expect(find.byType(PageView), findsOneWidget);
     });
 
-    testWidgets('back button returns to previous screen', (tester) async {
+    testWidgets('can be navigated to and screen is visible', (tester) async {
       await tester.pumpWidget(MaterialApp(
         home: Builder(builder: (context) {
           return TextButton(
@@ -63,12 +63,8 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(GalleryScreen), findsOneWidget);
-      expect(find.byType(BackButton), findsOneWidget);
-
-      await tester.tap(find.byType(BackButton));
-      await tester.pumpAndSettle();
-
-      expect(find.text('Open Gallery'), findsOneWidget);
+      // No in-app back button — users use the phone's native back gesture
+      expect(find.byType(BackButton), findsNothing);
     });
 
     testWidgets('each image is wrapped in InteractiveViewer for pinch-to-zoom',
