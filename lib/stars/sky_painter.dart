@@ -1,6 +1,6 @@
 import 'dart:math';
 import 'dart:ui';
-import 'package:flutter/material.dart' show Color;
+import 'package:flutter/material.dart' show Color, CustomPainter;
 import '../stars/star.dart';
 import '../stars/constellation.dart';
 import '../stars/sky_projection.dart';
