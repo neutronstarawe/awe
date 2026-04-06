@@ -82,5 +82,17 @@ void main() {
 
       expect(find.byType(InteractiveViewer), findsOneWidget);
     });
+
+    testWidgets('shows "No images yet" when imagePaths is empty', (tester) async {
+      await tester.pumpWidget(const MaterialApp(
+        home: GalleryScreen(
+          title: 'Intricate',
+          imagePaths: [],
+        ),
+      ));
+
+      expect(find.text('No images yet'), findsOneWidget);
+      expect(find.byType(PageView), findsNothing);
+    });
   });
 }
