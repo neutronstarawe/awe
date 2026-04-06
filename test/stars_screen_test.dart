@@ -30,7 +30,6 @@ void main() {
     ));
     await tester.pump(Duration.zero);
     expect(find.byType(StarsScreen), findsOneWidget);
-    orientation.dispose();
   });
 
   testWidgets('StarsScreen repaints when orientation emits', (tester) async {
@@ -46,6 +45,5 @@ void main() {
     orientation.emit(const SkyOrientation(azimuth: 1.0, altitude: 0.5));
     await tester.pump();
     expect(find.byType(CustomPaint), findsAtLeastNWidgets(1));
-    orientation.dispose();
   });
 }
