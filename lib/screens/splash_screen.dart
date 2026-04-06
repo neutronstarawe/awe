@@ -1,17 +1,14 @@
 import 'package:flutter/material.dart';
-import '../core/audio_engine.dart';
 import '../core/app_preferences.dart';
-import 'montage_screen.dart';
+import 'experience_screen.dart';
 
 class SplashScreen extends StatefulWidget {
-  final AudioEngine audioEngine;
   final AppPreferences preferences;
   final Duration splashDuration;
   final VoidCallback? onComplete;
 
   const SplashScreen({
     super.key,
-    required this.audioEngine,
     required this.preferences,
     this.splashDuration = const Duration(seconds: 2),
     this.onComplete,
@@ -47,10 +44,7 @@ class _SplashScreenState extends State<SplashScreen>
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (_) => MontageScreen(
-              audioEngine: widget.audioEngine,
-              preferences: widget.preferences,
-            ),
+            builder: (_) => ExperienceScreen(preferences: widget.preferences),
           ),
         );
       }
