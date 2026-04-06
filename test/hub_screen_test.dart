@@ -10,14 +10,24 @@ void main() {
   group('HubScreen', () {
     setUp(() {
       SharedPreferences.setMockInitialValues({});
+      // All hub tests run in landscape (1920x1080) — the hub is landscape-only
     });
 
-    testWidgets('renders all 4 tiles with correct labels', (tester) async {
+    Future<AppPreferences> makePrefs() async {
+      final prefs = AppPreferences();
+      await prefs.init();
+      return prefs;
+    }
+
+    void setLandscape(WidgetTester tester) {
       tester.view.physicalSize = const Size(1920, 1080);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
-      final prefs = AppPreferences();
-      await prefs.init();
+    }
+
+    testWidgets('renders all 4 tiles with correct labels', (tester) async {
+      setLandscape(tester);
+      final prefs = await makePrefs();
 
       await tester.pumpWidget(MaterialApp(
         home: HubScreen(preferences: prefs),
@@ -30,11 +40,8 @@ void main() {
     });
 
     testWidgets('renders correct sublabels', (tester) async {
-      tester.view.physicalSize = const Size(1920, 1080);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(tester.view.resetPhysicalSize);
-      final prefs = AppPreferences();
-      await prefs.init();
+      setLandscape(tester);
+      final prefs = await makePrefs();
 
       await tester.pumpWidget(MaterialApp(
         home: HubScreen(preferences: prefs),
@@ -47,8 +54,8 @@ void main() {
     });
 
     testWidgets('shows "awe" title', (tester) async {
-      final prefs = AppPreferences();
-      await prefs.init();
+      setLandscape(tester);
+      final prefs = await makePrefs();
 
       await tester.pumpWidget(MaterialApp(
         home: HubScreen(preferences: prefs),
@@ -58,8 +65,8 @@ void main() {
     });
 
     testWidgets('has black background', (tester) async {
-      final prefs = AppPreferences();
-      await prefs.init();
+      setLandscape(tester);
+      final prefs = await makePrefs();
 
       await tester.pumpWidget(MaterialApp(
         home: HubScreen(preferences: prefs),
@@ -70,8 +77,8 @@ void main() {
     });
 
     testWidgets('shows "Relive the Experience" button', (tester) async {
-      final prefs = AppPreferences();
-      await prefs.init();
+      setLandscape(tester);
+      final prefs = await makePrefs();
 
       await tester.pumpWidget(MaterialApp(
         home: HubScreen(preferences: prefs),
@@ -82,11 +89,8 @@ void main() {
 
     testWidgets('tapping Intricate navigates to GalleryScreen with title Intricate',
         (tester) async {
-      tester.view.physicalSize = const Size(1920, 1080);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(tester.view.resetPhysicalSize);
-      final prefs = AppPreferences();
-      await prefs.init();
+      setLandscape(tester);
+      final prefs = await makePrefs();
 
       await tester.pumpWidget(MaterialApp(
         home: HubScreen(preferences: prefs),
@@ -96,16 +100,14 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(GalleryScreen), findsOneWidget);
-      expect(find.text('Intricate'), findsOneWidget);
+      final gallery = tester.widget<GalleryScreen>(find.byType(GalleryScreen));
+      expect(gallery.title, equals('Intricate'));
     });
 
     testWidgets('tapping Majestic navigates to GalleryScreen with title Majestic',
         (tester) async {
-      tester.view.physicalSize = const Size(1920, 1080);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(tester.view.resetPhysicalSize);
-      final prefs = AppPreferences();
-      await prefs.init();
+      setLandscape(tester);
+      final prefs = await makePrefs();
 
       await tester.pumpWidget(MaterialApp(
         home: HubScreen(preferences: prefs),
@@ -115,16 +117,14 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(GalleryScreen), findsOneWidget);
-      expect(find.text('Majestic'), findsOneWidget);
+      final gallery = tester.widget<GalleryScreen>(find.byType(GalleryScreen));
+      expect(gallery.title, equals('Majestic'));
     });
 
     testWidgets('tapping Cosmic navigates to GalleryScreen with title Cosmic',
         (tester) async {
-      tester.view.physicalSize = const Size(1920, 1080);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(tester.view.resetPhysicalSize);
-      final prefs = AppPreferences();
-      await prefs.init();
+      setLandscape(tester);
+      final prefs = await makePrefs();
 
       await tester.pumpWidget(MaterialApp(
         home: HubScreen(preferences: prefs),
@@ -134,15 +134,13 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(GalleryScreen), findsOneWidget);
-      expect(find.text('Cosmic'), findsOneWidget);
+      final gallery = tester.widget<GalleryScreen>(find.byType(GalleryScreen));
+      expect(gallery.title, equals('Cosmic'));
     });
 
     testWidgets('tapping Stars Simulation does not navigate away', (tester) async {
-      tester.view.physicalSize = const Size(1920, 1080);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(tester.view.resetPhysicalSize);
-      final prefs = AppPreferences();
-      await prefs.init();
+      setLandscape(tester);
+      final prefs = await makePrefs();
 
       await tester.pumpWidget(MaterialApp(
         home: HubScreen(preferences: prefs),
@@ -156,8 +154,8 @@ void main() {
 
     testWidgets('"Relive the Experience" navigates to ExperienceScreen',
         (tester) async {
-      final prefs = AppPreferences();
-      await prefs.init();
+      setLandscape(tester);
+      final prefs = await makePrefs();
 
       await tester.pumpWidget(MaterialApp(
         home: HubScreen(preferences: prefs),
