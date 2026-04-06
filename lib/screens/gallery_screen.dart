@@ -14,17 +14,7 @@ class GalleryScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        foregroundColor: Colors.white,
-        title: Text(
-          title,
-          style: const TextStyle(
-            fontWeight: FontWeight.w200,
-            letterSpacing: 4,
-          ),
-        ),
-      ),
+      extendBodyBehindAppBar: true,
       body: imagePaths.isEmpty
           ? Center(
               child: Text(
@@ -42,9 +32,9 @@ class GalleryScreen extends StatelessWidget {
                 return InteractiveViewer(
                   minScale: 1.0,
                   maxScale: 4.0,
-                  child: Image.asset(
+                  child: SizedBox.expand(child: Image.asset(
                     imagePaths[index],
-                    fit: BoxFit.contain,
+                    fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) {
                       return Center(
                         child: Icon(
@@ -54,7 +44,7 @@ class GalleryScreen extends StatelessWidget {
                         ),
                       );
                     },
-                  ),
+                  )),
                 );
               },
             ),

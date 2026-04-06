@@ -13,13 +13,23 @@ class HubScreen extends StatelessWidget {
 
   // Update these lists as you add images to the corresponding asset folders.
   static const _intricatePaths = <String>[
-    // Add paths here as you drop images into assets/images/intricate/
-    // e.g. 'assets/images/intricate/01.jpg',
+    'assets/images/intricate/01.jpg',
+    'assets/images/intricate/02.jpeg',
+    'assets/images/intricate/03.jpg',
+    'assets/images/intricate/04.jpg',
+    'assets/images/intricate/05.jpg',
+    'assets/images/intricate/06.jpg',
+    'assets/images/intricate/07.webp',
   ];
 
   static const _majesticPaths = <String>[
-    // Add paths here as you drop images into assets/images/majestic/
-    // e.g. 'assets/images/majestic/01.jpg',
+    'assets/images/majestic/01.png',
+    'assets/images/majestic/02.jpg',
+    'assets/images/majestic/03.webp',
+    'assets/images/majestic/04.jpg',
+    'assets/images/majestic/05.jpg',
+    'assets/images/majestic/06.jpg',
+    'assets/images/majestic/07.jpeg',
   ];
 
   static const _cosmicPaths = <String>[
