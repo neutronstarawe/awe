@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import '../core/app_preferences.dart';
-import '../core/audio_engine.dart';
 import 'hub_screen.dart';
 
 class ExperienceScreen extends StatefulWidget {
@@ -73,7 +72,6 @@ class _ExperienceScreenState extends State<ExperienceScreen> {
       context,
       MaterialPageRoute(
         builder: (_) => HubScreen(
-          audioEngine: AudioEngine(),
           preferences: widget.preferences,
         ),
       ),

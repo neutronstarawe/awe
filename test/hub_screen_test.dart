@@ -1,14 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:awe/core/audio_engine.dart';
 import 'package:awe/core/app_preferences.dart';
 import 'package:awe/screens/hub_screen.dart';
-import 'package:awe/screens/micro_awe_screen.dart';
-import 'package:awe/screens/cosmic_awe_screen.dart';
-import 'package:awe/screens/power_of_nature_screen.dart';
-import 'package:awe/screens/splash_screen.dart';
-import 'fakes.dart';
+import 'package:awe/screens/gallery_screen.dart';
+import 'package:awe/screens/experience_screen.dart';
 
 void main() {
   group('HubScreen', () {
@@ -16,119 +12,167 @@ void main() {
       SharedPreferences.setMockInitialValues({});
     });
 
-    testWidgets('renders all 4 hub tiles', (tester) async {
-      final engine = AudioEngine(player: FakeAudioPlayer());
+    testWidgets('renders all 4 tiles with correct labels', (tester) async {
+      tester.view.physicalSize = const Size(1920, 1080);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
       final prefs = AppPreferences();
+      await prefs.init();
 
       await tester.pumpWidget(MaterialApp(
-        home: HubScreen(audioEngine: engine, preferences: prefs),
+        home: HubScreen(preferences: prefs),
       ));
 
-      expect(find.text('Micro Awe'), findsOneWidget);
-      expect(find.text('Cosmic Awe'), findsOneWidget);
-      expect(find.text('Power of Nature'), findsOneWidget);
-      expect(find.text('Reset'), findsOneWidget);
+      expect(find.textContaining('Intricate'), findsOneWidget);
+      expect(find.textContaining('Majestic'), findsOneWidget);
+      expect(find.textContaining('Cosmic'), findsOneWidget);
+      expect(find.textContaining('Stars'), findsOneWidget);
+    });
+
+    testWidgets('renders correct sublabels', (tester) async {
+      tester.view.physicalSize = const Size(1920, 1080);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      final prefs = AppPreferences();
+      await prefs.init();
+
+      await tester.pumpWidget(MaterialApp(
+        home: HubScreen(preferences: prefs),
+      ));
+
+      expect(find.text('The Small'), findsOneWidget);
+      expect(find.text('The Grand'), findsOneWidget);
+      expect(find.text('The Infinite'), findsOneWidget);
+      expect(find.text('Coming Soon'), findsOneWidget);
     });
 
     testWidgets('shows "awe" title', (tester) async {
-      final engine = AudioEngine(player: FakeAudioPlayer());
       final prefs = AppPreferences();
+      await prefs.init();
 
       await tester.pumpWidget(MaterialApp(
-        home: HubScreen(audioEngine: engine, preferences: prefs),
+        home: HubScreen(preferences: prefs),
       ));
 
       expect(find.text('awe'), findsOneWidget);
     });
 
     testWidgets('has black background', (tester) async {
-      final engine = AudioEngine(player: FakeAudioPlayer());
       final prefs = AppPreferences();
+      await prefs.init();
 
       await tester.pumpWidget(MaterialApp(
-        home: HubScreen(audioEngine: engine, preferences: prefs),
+        home: HubScreen(preferences: prefs),
       ));
 
       final scaffold = tester.widget<Scaffold>(find.byType(Scaffold));
       expect(scaffold.backgroundColor, equals(Colors.black));
     });
 
-    testWidgets('tapping Micro Awe navigates to MicroAweScreen', (tester) async {
-      final engine = AudioEngine(player: FakeAudioPlayer());
-      final prefs = AppPreferences();
-
-      await tester.pumpWidget(MaterialApp(
-        home: HubScreen(audioEngine: engine, preferences: prefs),
-      ));
-
-      await tester.tap(find.text('Micro Awe'));
-      await tester.pumpAndSettle();
-
-      expect(find.byType(MicroAweScreen), findsOneWidget);
-    });
-
-    testWidgets('tapping Cosmic Awe navigates to CosmicAweScreen',
-        (tester) async {
-      final engine = AudioEngine(player: FakeAudioPlayer());
-      final prefs = AppPreferences();
-
-      await tester.pumpWidget(MaterialApp(
-        home: HubScreen(audioEngine: engine, preferences: prefs),
-      ));
-
-      await tester.tap(find.text('Cosmic Awe'));
-      await tester.pumpAndSettle();
-
-      expect(find.byType(CosmicAweScreen), findsOneWidget);
-    });
-
-    testWidgets('tapping Power of Nature navigates to PowerOfNatureScreen',
-        (tester) async {
-      final engine = AudioEngine(player: FakeAudioPlayer());
-      final prefs = AppPreferences();
-
-      await tester.pumpWidget(MaterialApp(
-        home: HubScreen(audioEngine: engine, preferences: prefs),
-      ));
-
-      await tester.tap(find.text('Power of Nature'));
-      await tester.pumpAndSettle();
-
-      expect(find.byType(PowerOfNatureScreen), findsOneWidget);
-    });
-
-    testWidgets('tapping Reset clears hasSeenIntro and navigates to Splash',
-        (tester) async {
-      SharedPreferences.setMockInitialValues({'has_seen_intro': true});
-      final engine = AudioEngine(player: FakeAudioPlayer());
+    testWidgets('shows "Relive the Experience" button', (tester) async {
       final prefs = AppPreferences();
       await prefs.init();
 
       await tester.pumpWidget(MaterialApp(
-        home: HubScreen(audioEngine: engine, preferences: prefs),
+        home: HubScreen(preferences: prefs),
       ));
 
-      await tester.tap(find.text('Reset'));
-      await tester.pump();
-      await tester.pump();
-
-      expect(find.byType(SplashScreen), findsOneWidget);
-      expect(await prefs.hasSeenIntro, isFalse);
-
-      // Drain splash timer
-      await tester.pump(const Duration(seconds: 3));
-      await tester.pump(Duration.zero);
+      expect(find.textContaining('Relive'), findsOneWidget);
     });
 
-    testWidgets('uses 2x2 GridView layout', (tester) async {
-      final engine = AudioEngine(player: FakeAudioPlayer());
+    testWidgets('tapping Intricate navigates to GalleryScreen with title Intricate',
+        (tester) async {
+      tester.view.physicalSize = const Size(1920, 1080);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
       final prefs = AppPreferences();
+      await prefs.init();
 
       await tester.pumpWidget(MaterialApp(
-        home: HubScreen(audioEngine: engine, preferences: prefs),
+        home: HubScreen(preferences: prefs),
       ));
 
-      expect(find.byType(GridView), findsOneWidget);
+      await tester.tap(find.textContaining('Intricate'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(GalleryScreen), findsOneWidget);
+      expect(find.text('Intricate'), findsOneWidget);
+    });
+
+    testWidgets('tapping Majestic navigates to GalleryScreen with title Majestic',
+        (tester) async {
+      tester.view.physicalSize = const Size(1920, 1080);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      final prefs = AppPreferences();
+      await prefs.init();
+
+      await tester.pumpWidget(MaterialApp(
+        home: HubScreen(preferences: prefs),
+      ));
+
+      await tester.tap(find.textContaining('Majestic'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(GalleryScreen), findsOneWidget);
+      expect(find.text('Majestic'), findsOneWidget);
+    });
+
+    testWidgets('tapping Cosmic navigates to GalleryScreen with title Cosmic',
+        (tester) async {
+      tester.view.physicalSize = const Size(1920, 1080);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      final prefs = AppPreferences();
+      await prefs.init();
+
+      await tester.pumpWidget(MaterialApp(
+        home: HubScreen(preferences: prefs),
+      ));
+
+      await tester.tap(find.textContaining('Cosmic'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(GalleryScreen), findsOneWidget);
+      expect(find.text('Cosmic'), findsOneWidget);
+    });
+
+    testWidgets('tapping Stars Simulation does not navigate away', (tester) async {
+      tester.view.physicalSize = const Size(1920, 1080);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      final prefs = AppPreferences();
+      await prefs.init();
+
+      await tester.pumpWidget(MaterialApp(
+        home: HubScreen(preferences: prefs),
+      ));
+
+      await tester.tap(find.textContaining('Stars'));
+      await tester.pump();
+
+      expect(find.byType(HubScreen), findsOneWidget);
+    });
+
+    testWidgets('"Relive the Experience" navigates to ExperienceScreen',
+        (tester) async {
+      final prefs = AppPreferences();
+      await prefs.init();
+
+      await tester.pumpWidget(MaterialApp(
+        home: HubScreen(preferences: prefs),
+      ));
+
+      await tester.tap(find.textContaining('Relive'));
+      await tester.pump();
+      await tester.pump();
+
+      expect(find.byType(ExperienceScreen), findsOneWidget);
+
+      // Drain video controller async operations
+      for (int i = 0; i < 10; i++) {
+        await tester.pump(Duration.zero);
+      }
     });
   });
 }
