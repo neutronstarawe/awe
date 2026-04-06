@@ -14,6 +14,8 @@ dependencies:
   shared_preferences: ^2.2.3
   video_player: ^2.9.1
   sensors_plus: ^4.0.2
+  geolocator: ^12.0.0
+  flutter_compass: ^0.8.0
 
 dev_dependencies:
   flutter_test:
@@ -26,6 +28,7 @@ flutter:
   uses-material-design: true
 
   assets:
+    - assets/data/
     - assets/images/intricate/
     - assets/images/majestic/
     - assets/images/cosmic/
