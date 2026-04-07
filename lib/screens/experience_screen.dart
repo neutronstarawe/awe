@@ -30,7 +30,7 @@ class _ExperienceScreenState extends State<ExperienceScreen> {
       DeviceOrientation.landscapeLeft,
       DeviceOrientation.landscapeRight,
     ]);
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
     _controller = VideoPlayerController.asset('assets/video/the_experience.mp4');
     _initVideo();
   }
@@ -100,7 +100,7 @@ class _ExperienceScreenState extends State<ExperienceScreen> {
       body: _initialized
           ? SizedBox.expand(
               child: FittedBox(
-                fit: BoxFit.contain,
+                fit: BoxFit.cover,
                 child: SizedBox(
                   width: _controller.value.size.width,
                   height: _controller.value.size.height,
