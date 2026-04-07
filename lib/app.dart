@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'core/app_preferences.dart';
-import 'screens/orientation_gate_screen.dart';
 import 'screens/splash_screen.dart';
 import 'screens/hub_screen.dart';
 
@@ -51,11 +50,9 @@ class _AweAppState extends State<AweApp> {
       theme: ThemeData.dark().copyWith(
         scaffoldBackgroundColor: Colors.black,
       ),
-      home: OrientationGateScreen(
-        child: _hasSeenIntro
-            ? HubScreen(preferences: _preferences)
-            : SplashScreen(preferences: _preferences),
-      ),
+      home: _hasSeenIntro
+          ? HubScreen(preferences: _preferences)
+          : SplashScreen(preferences: _preferences),
     );
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:video_player/video_player.dart';
 import '../core/app_preferences.dart';
 import 'hub_screen.dart';
@@ -25,6 +26,11 @@ class _ExperienceScreenState extends State<ExperienceScreen> {
   @override
   void initState() {
     super.initState();
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
     _controller = VideoPlayerController.asset('assets/video/the_experience.mp4');
     _initVideo();
   }
@@ -82,6 +88,8 @@ class _ExperienceScreenState extends State<ExperienceScreen> {
   void dispose() {
     _controller.removeListener(_onVideoUpdate);
     _controller.dispose();
+    SystemChrome.setPreferredOrientations([]);
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     super.dispose();
   }
 
@@ -92,7 +100,7 @@ class _ExperienceScreenState extends State<ExperienceScreen> {
       body: _initialized
           ? SizedBox.expand(
               child: FittedBox(
-                fit: BoxFit.cover,
+                fit: BoxFit.contain,
                 child: SizedBox(
                   width: _controller.value.size.width,
                   height: _controller.value.size.height,

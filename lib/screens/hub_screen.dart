@@ -45,137 +45,202 @@ class HubScreen extends StatelessWidget {
     'assets/images/cosmic/07.jpg',
   ];
 
+  void _openGallery(BuildContext context, String title, List<String> paths) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => GalleryScreen(title: title, imagePaths: paths),
+      ),
+    );
+  }
+
+  Future<void> _openStars(BuildContext context) async {
+    final catalog = await StarCatalog.load(DefaultAssetBundle.of(context));
+    if (!context.mounted) return;
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => StarsScreen(
+          catalog: catalog,
+          orientationSource: RealSkyOrientationSource(),
+        ),
+      ),
+    );
+  }
+
+  Widget _reliveButton(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 20),
+      child: GestureDetector(
+        onTap: () => Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => ExperienceScreen(preferences: preferences),
+          ),
+        ),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.2),
+              width: 0.5,
+            ),
+            borderRadius: BorderRadius.circular(24),
+          ),
+          child: Text(
+            'Relive the Experience',
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.55),
+              fontSize: 13,
+              letterSpacing: 2,
+              fontWeight: FontWeight.w300,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
       body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: Row(
-                children: [
-                  // Left: title
-                  SizedBox(
-                    width: 140,
-                    child: Center(
-                      child: Text(
-                        'awe',
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.85),
-                          fontSize: 28,
-                          fontWeight: FontWeight.w100,
-                          letterSpacing: 10,
-                        ),
-                      ),
-                    ),
-                  ),
-                  // Divider
-                  Container(
-                    width: 1,
-                    margin: const EdgeInsets.symmetric(vertical: 24),
-                    color: Colors.white10,
-                  ),
-                  // Right: 4 tiles
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: Row(
-                        children: [
-                          _HubTile(
-                            label: 'Intricate',
-                            sublabel: 'The Small',
-                            icon: Icons.biotech,
-                            onTap: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const GalleryScreen(
-                                  title: 'Intricate',
-                                  imagePaths: _intricatePaths,
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          _HubTile(
-                            label: 'Majestic',
-                            sublabel: 'The Grand',
-                            icon: Icons.landscape,
-                            onTap: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const GalleryScreen(
-                                  title: 'Majestic',
-                                  imagePaths: _majesticPaths,
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          _HubTile(
-                            label: 'Cosmic',
-                            sublabel: 'The Infinite',
-                            icon: Icons.stars,
-                            onTap: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const GalleryScreen(
-                                  title: 'Cosmic',
-                                  imagePaths: _cosmicPaths,
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          _HubTile(
-                            label: 'Stars\nSimulation',
-                            sublabel: 'The Sky',
-                            icon: Icons.scatter_plot,
-                            onTap: () async {
-                              final catalog = await StarCatalog.load(DefaultAssetBundle.of(context));
-                              if (!context.mounted) return;
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => StarsScreen(
-                                    catalog: catalog,
-                                    orientationSource: RealSkyOrientationSource(),
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            // "Relive the Experience" button below tiles
-            Padding(
-              padding: const EdgeInsets.only(bottom: 20),
-              child: GestureDetector(
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => ExperienceScreen(preferences: preferences),
-                  ),
-                ),
-                child: Text(
-                  'Relive the Experience',
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.4),
-                    fontSize: 13,
-                    letterSpacing: 2,
-                    fontWeight: FontWeight.w300,
-                  ),
-                ),
-              ),
-            ),
-          ],
+        child: OrientationBuilder(
+          builder: (context, orientation) {
+            if (orientation == Orientation.landscape) {
+              return _buildLandscape(context);
+            }
+            return _buildPortrait(context);
+          },
         ),
       ),
+    );
+  }
+
+  Widget _buildLandscape(BuildContext context) {
+    return Column(
+      children: [
+        Expanded(
+          child: Row(
+            children: [
+              // Left: title
+              SizedBox(
+                width: 140,
+                child: Center(
+                  child: Text(
+                    'awe',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.85),
+                      fontSize: 28,
+                      fontWeight: FontWeight.w100,
+                      letterSpacing: 10,
+                    ),
+                  ),
+                ),
+              ),
+              // Right: 4 tiles
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Row(
+                    children: [
+                      Expanded(child: _HubTile(
+                        label: 'Intricate', sublabel: 'The Small',
+                        icon: Icons.biotech,
+                        onTap: () => _openGallery(context, 'Intricate', _intricatePaths),
+                      )),
+                      const SizedBox(width: 12),
+                      Expanded(child: _HubTile(
+                        label: 'Majestic', sublabel: 'The Grand',
+                        icon: Icons.landscape,
+                        onTap: () => _openGallery(context, 'Majestic', _majesticPaths),
+                      )),
+                      const SizedBox(width: 12),
+                      Expanded(child: _HubTile(
+                        label: 'Cosmic', sublabel: 'The Infinite',
+                        icon: Icons.stars,
+                        onTap: () => _openGallery(context, 'Cosmic', _cosmicPaths),
+                      )),
+                      const SizedBox(width: 12),
+                      Expanded(child: _HubTile(
+                        label: 'Stars\nSimulation', sublabel: 'The Sky',
+                        icon: Icons.scatter_plot,
+                        onTap: () => _openStars(context),
+                      )),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        _reliveButton(context),
+      ],
+    );
+  }
+
+  Widget _buildPortrait(BuildContext context) {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 36),
+          child: Text(
+            'awe',
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.85),
+              fontSize: 32,
+              fontWeight: FontWeight.w100,
+              letterSpacing: 12,
+            ),
+          ),
+        ),
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Column(
+              children: [
+                Expanded(
+                  child: Row(
+                    children: [
+                      Expanded(child: _HubTile(
+                        label: 'Intricate', sublabel: 'The Small',
+                        icon: Icons.biotech,
+                        onTap: () => _openGallery(context, 'Intricate', _intricatePaths),
+                      )),
+                      const SizedBox(width: 12),
+                      Expanded(child: _HubTile(
+                        label: 'Majestic', sublabel: 'The Grand',
+                        icon: Icons.landscape,
+                        onTap: () => _openGallery(context, 'Majestic', _majesticPaths),
+                      )),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Expanded(
+                  child: Row(
+                    children: [
+                      Expanded(child: _HubTile(
+                        label: 'Cosmic', sublabel: 'The Infinite',
+                        icon: Icons.stars,
+                        onTap: () => _openGallery(context, 'Cosmic', _cosmicPaths),
+                      )),
+                      const SizedBox(width: 12),
+                      Expanded(child: _HubTile(
+                        label: 'Stars\nSimulation', sublabel: 'The Sky',
+                        icon: Icons.scatter_plot,
+                        onTap: () => _openStars(context),
+                      )),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        _reliveButton(context),
+      ],
     );
   }
 }
@@ -197,8 +262,7 @@ class _HubTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: GestureDetector(
+    return GestureDetector(
         onTap: onTap,
         child: Opacity(
           opacity: muted ? 0.4 : 1.0,
@@ -236,7 +300,6 @@ class _HubTile extends StatelessWidget {
             ),
           ),
         ),
-      ),
     );
   }
 }
