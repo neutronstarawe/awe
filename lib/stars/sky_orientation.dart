@@ -55,9 +55,6 @@ class RealSkyOrientationSource implements SkyOrientationSource {
   /// Lower = smoother but more lag. 0.10 is a good balance.
   static const double _alpha = 0.10;
 
-  /// Altitude above which azimuth is frozen (compass unreliable near zenith).
-  static const double _zenithLockAlt = 75 * pi / 180;
-
   StreamSubscription<CompassEvent>? _compassSub;
   StreamSubscription<AccelerometerEvent>? _accelSub;
   final _controller = StreamController<SkyOrientation>.broadcast();
@@ -91,10 +88,7 @@ class RealSkyOrientationSource implements SkyOrientationSource {
       // Smooth altitude with EMA
       _smoothAlt = _smoothAlt! + _alpha * (rawAlt - _smoothAlt!);
 
-      // Freeze azimuth near zenith — compass is unreliable face-up
-      if ((_smoothAlt ?? 0) < _zenithLockAlt) {
-        _smoothAz = _smoothAngle(_smoothAz!, rawAz, _alpha);
-      }
+      _smoothAz = _smoothAngle(_smoothAz!, rawAz, _alpha);
     }
 
     _controller.add(SkyOrientation(
