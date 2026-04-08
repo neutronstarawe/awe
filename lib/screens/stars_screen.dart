@@ -50,23 +50,19 @@ class _StarsScreenState extends State<StarsScreen>
     _orientationSub = widget.orientationSource.stream.listen(_onOrientation);
     _initLocation();
 
-    // Twinkle: slow repeating animation drives shimmer on dim stars
+    // Twinkle: slow repeating animation — drives shimmer via CustomPainter
+    // repaint Listenable so only the canvas repaints, not the widget tree.
     _twinkleController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 4),
     )..repeat();
-    _twinkleController.addListener(_onTwinkle);
   }
 
   void _onOrientation(SkyOrientation o) {
     if (mounted) setState(() => _orientation = o);
   }
 
-  void _onTwinkle() {
-    if (mounted) setState(() {}); // repaint driven by twinkle phase
-  }
-
-  Future<void> _initLocation() async {
+Future<void> _initLocation() async {
     if (widget.observerLat != null && widget.observerLng != null) {
       setState(() {
         _latRad = widget.observerLat!;
@@ -145,7 +141,7 @@ class _StarsScreenState extends State<StarsScreen>
               observerLat: _latRad,
               lst: lst,
               projection: projection,
-              twinklePhase: _twinkleController.value * 2 * pi,
+              twinkle: _twinkleController,
             );
             return CustomPaint(painter: painter, size: size);
           },
@@ -156,7 +152,6 @@ class _StarsScreenState extends State<StarsScreen>
 
   @override
   void dispose() {
-    _twinkleController.removeListener(_onTwinkle);
     _twinkleController.dispose();
     _orientationSub?.cancel();
     widget.orientationSource.dispose();

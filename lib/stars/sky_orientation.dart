@@ -46,31 +46,69 @@ class FakeSkyOrientationSource implements SkyOrientationSource {
 }
 
 /// Production implementation combining flutter_compass + accelerometer.
+///
+/// Applies an exponential moving average (EMA) to both axes to eliminate
+/// sensor noise. Near zenith (altitude > 75°) azimuth is frozen because
+/// the compass becomes unreliable when the phone is nearly horizontal.
 class RealSkyOrientationSource implements SkyOrientationSource {
+  /// Smoothing factor: fraction of new reading blended in each update.
+  /// Lower = smoother but more lag. 0.10 is a good balance.
+  static const double _alpha = 0.10;
+
+  /// Altitude above which azimuth is frozen (compass unreliable near zenith).
+  static const double _zenithLockAlt = 75 * pi / 180;
+
   StreamSubscription<CompassEvent>? _compassSub;
   StreamSubscription<AccelerometerEvent>? _accelSub;
   final _controller = StreamController<SkyOrientation>.broadcast();
 
-  double? _azimuth;
-  double? _altitude;
+  double? _rawAz;
+  double? _rawAlt;
+  double? _smoothAz;
+  double? _smoothAlt;
 
   RealSkyOrientationSource() {
     _compassSub = FlutterCompass.events?.listen((e) {
-      _azimuth = (e.heading ?? 0) * pi / 180;
+      _rawAz = (e.heading ?? 0) * pi / 180;
       _tryEmit();
     });
     _accelSub = accelerometerEventStream().listen((e) {
-      _altitude = SkyOrientation.altitudeFromAccel(ax: e.x, ay: e.y, az: e.z);
+      _rawAlt = SkyOrientation.altitudeFromAccel(ax: e.x, ay: e.y, az: e.z);
       _tryEmit();
     });
   }
 
   void _tryEmit() {
-    final az = _azimuth;
-    final alt = _altitude;
-    if (az != null && alt != null) {
-      _controller.add(SkyOrientation(azimuth: az, altitude: alt));
+    final rawAz = _rawAz;
+    final rawAlt = _rawAlt;
+    if (rawAz == null || rawAlt == null) return;
+
+    if (_smoothAz == null) {
+      // First reading — initialise without blending
+      _smoothAz = rawAz;
+      _smoothAlt = rawAlt;
+    } else {
+      // Smooth altitude with EMA
+      _smoothAlt = _smoothAlt! + _alpha * (rawAlt - _smoothAlt!);
+
+      // Freeze azimuth near zenith — compass is unreliable face-up
+      if ((_smoothAlt ?? 0) < _zenithLockAlt) {
+        _smoothAz = _smoothAngle(_smoothAz!, rawAz, _alpha);
+      }
     }
+
+    _controller.add(SkyOrientation(
+      azimuth: _smoothAz!,
+      altitude: _smoothAlt!,
+    ));
+  }
+
+  /// EMA for angles, handling the 0/2π wrap-around.
+  static double _smoothAngle(double prev, double next, double alpha) {
+    var diff = next - prev;
+    if (diff > pi) diff -= 2 * pi;
+    if (diff < -pi) diff += 2 * pi;
+    return (prev + alpha * diff) % (2 * pi);
   }
 
   @override

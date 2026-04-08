@@ -1,6 +1,6 @@
 import 'dart:math';
 import 'dart:ui';
-import 'package:flutter/material.dart' show Color, CustomPainter, RadialGradient, Alignment;
+import 'package:flutter/material.dart' show Animation, Color, CustomPainter, RadialGradient, Alignment;
 import '../stars/star.dart';
 import '../stars/constellation.dart';
 import '../stars/sky_projection.dart';
@@ -14,17 +14,21 @@ class SkyPainter extends CustomPainter {
   final double observerLat;   // radians
   final double lst;           // Local Sidereal Time, radians
   final SkyProjection projection;
-  final double twinklePhase;  // 0–2π, drives subtle shimmer on dim stars
+  /// Animation that drives twinkle. Passed as `repaint` so only the canvas
+  /// repaints each frame — not the entire widget tree.
+  final Animation<double>? twinkle;
 
-  const SkyPainter({
+  SkyPainter({
     required this.stars,
     required this.constellations,
     required this.starById,
     required this.observerLat,
     required this.lst,
     required this.projection,
-    this.twinklePhase = 0,
-  });
+    this.twinkle,
+  }) : super(repaint: twinkle);
+
+  double get _twinklePhase => (twinkle?.value ?? 0) * 2 * pi;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -98,7 +102,7 @@ class SkyPainter extends CustomPainter {
 
     // Twinkle: dim stars shimmer slightly based on animated phase
     final twinkle = star.mag > 3.0
-        ? 0.85 + 0.15 * sin(twinklePhase + star.id * 1.618)
+        ? 0.85 + 0.15 * sin(_twinklePhase + star.id * 1.618)
         : 1.0;
     final effectiveOpacity = (opacity * twinkle).clamp(0.0, 1.0);
 
@@ -155,7 +159,6 @@ class SkyPainter extends CustomPainter {
   @override
   bool shouldRepaint(SkyPainter old) =>
       old.lst != lst ||
-      old.twinklePhase != twinklePhase ||
       old.projection.centerAz != projection.centerAz ||
       old.projection.centerAlt != projection.centerAlt;
 }
