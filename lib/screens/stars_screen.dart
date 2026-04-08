@@ -26,7 +26,8 @@ class StarsScreen extends StatefulWidget {
   State<StarsScreen> createState() => _StarsScreenState();
 }
 
-class _StarsScreenState extends State<StarsScreen> {
+class _StarsScreenState extends State<StarsScreen>
+    with SingleTickerProviderStateMixin {
   SkyOrientation _orientation = const SkyOrientation(azimuth: 0, altitude: 0);
   double _latRad = 0.0;
   double _lngRad = 0.0;
@@ -34,15 +35,35 @@ class _StarsScreenState extends State<StarsScreen> {
   String? _error;
   StreamSubscription<SkyOrientation>? _orientationSub;
 
+  // Twinkle animation
+  late final AnimationController _twinkleController;
+
+  // FOV controlled by pinch-to-zoom (in radians, half-angle)
+  double _fovRadians = 35 * pi / 180;
+  static const _minFov = 10 * pi / 180;
+  static const _maxFov = 70 * pi / 180;
+  double? _pinchStartFov;
+
   @override
   void initState() {
     super.initState();
     _orientationSub = widget.orientationSource.stream.listen(_onOrientation);
     _initLocation();
+
+    // Twinkle: slow repeating animation drives shimmer on dim stars
+    _twinkleController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 4),
+    )..repeat();
+    _twinkleController.addListener(_onTwinkle);
   }
 
   void _onOrientation(SkyOrientation o) {
     if (mounted) setState(() => _orientation = o);
+  }
+
+  void _onTwinkle() {
+    if (mounted) setState(() {}); // repaint driven by twinkle phase
   }
 
   Future<void> _initLocation() async {
@@ -62,7 +83,7 @@ class _StarsScreenState extends State<StarsScreen> {
       }
       if (permission == LocationPermission.denied ||
           permission == LocationPermission.deniedForever) {
-        setState(() => _error = 'Location permission required.');
+        if (mounted) setState(() => _error = 'Location permission required.');
         return;
       }
 
@@ -99,32 +120,44 @@ class _StarsScreenState extends State<StarsScreen> {
 
     return Scaffold(
       backgroundColor: Colors.black,
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          final size = Size(constraints.maxWidth, constraints.maxHeight);
-          final lst = localSiderealTime(_lngRad, DateTime.now().toUtc());
-          final projection = SkyProjection(
-            centerAz: _orientation.azimuth,
-            centerAlt: _orientation.altitude,
-            fovRadians: 35 * pi / 180, // 35° half-FOV
-            screenSize: size,
-          );
-          final painter = SkyPainter(
-            stars: widget.catalog.starsVisibleToNakedEye(),
-            constellations: widget.catalog.constellations,
-            starById: widget.catalog.byId,
-            observerLat: _latRad,
-            lst: lst,
-            projection: projection,
-          );
-          return CustomPaint(painter: painter, size: size);
+      body: GestureDetector(
+        onScaleStart: (_) => _pinchStartFov = _fovRadians,
+        onScaleUpdate: (details) {
+          if (details.pointerCount < 2) return;
+          final newFov = (_pinchStartFov! / details.scale)
+              .clamp(_minFov, _maxFov);
+          if (mounted) setState(() => _fovRadians = newFov);
         },
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final size = Size(constraints.maxWidth, constraints.maxHeight);
+            final lst = localSiderealTime(_lngRad, DateTime.now().toUtc());
+            final projection = SkyProjection(
+              centerAz: _orientation.azimuth,
+              centerAlt: _orientation.altitude,
+              fovRadians: _fovRadians,
+              screenSize: size,
+            );
+            final painter = SkyPainter(
+              stars: widget.catalog.starsVisibleToNakedEye(),
+              constellations: widget.catalog.constellations,
+              starById: widget.catalog.byId,
+              observerLat: _latRad,
+              lst: lst,
+              projection: projection,
+              twinklePhase: _twinkleController.value * 2 * pi,
+            );
+            return CustomPaint(painter: painter, size: size);
+          },
+        ),
       ),
     );
   }
 
   @override
   void dispose() {
+    _twinkleController.removeListener(_onTwinkle);
+    _twinkleController.dispose();
     _orientationSub?.cancel();
     widget.orientationSource.dispose();
     super.dispose();
