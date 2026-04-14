@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+
+  <!-- Background -->
+  <rect width="1024" height="1024" fill="#000000"/>
+
+  <!-- Subtle deep radial glow so the background isn't perfectly flat -->
+  <radialGradient id="bg" cx="50%" cy="50%" r="55%">
+    <stop offset="0%"   stop-color="#0d1117"/>
+    <stop offset="100%" stop-color="#000000"/>
+  </radialGradient>
+  <rect width="1024" height="1024" fill="url(#bg)"/>
+
+  <!--
+    textLength + lengthAdjust="spacing" distributes space between glyphs
+    without adding trailing space, so text-anchor="middle" centres exactly.
+  -->
+  <text
+    x="512" y="512"
+    text-anchor="middle"
+    dominant-baseline="central"
+    font-family="'Helvetica Neue', Helvetica, Arial, sans-serif"
+    font-weight="100"
+    font-size="196"
+    fill="#ffffff"
+    opacity="0.88"
+    textLength="420"
+    lengthAdjust="spacing"
+  >awe</text>
+
+</svg>
