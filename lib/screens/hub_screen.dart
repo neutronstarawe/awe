@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../core/app_preferences.dart';
 import 'gallery_screen.dart';
 import 'experience_screen.dart';
@@ -6,15 +7,16 @@ import '../stars/star_catalog.dart';
 import '../stars/sky_orientation.dart';
 import 'stars_screen.dart';
 
-class HubScreen extends StatelessWidget {
+class HubScreen extends StatefulWidget {
   final AppPreferences preferences;
 
-  const HubScreen({
-    super.key,
-    required this.preferences,
-  });
+  const HubScreen({super.key, required this.preferences});
 
-  // Update these lists as you add images to the corresponding asset folders.
+  @override
+  State<HubScreen> createState() => _HubScreenState();
+}
+
+class _HubScreenState extends State<HubScreen> {
   static const _intricatePaths = <String>[
     'assets/images/intricate/01.jpg',
     'assets/images/intricate/02.jpeg',
@@ -44,6 +46,19 @@ class HubScreen extends StatelessWidget {
     'assets/images/cosmic/06.jpg',
     'assets/images/cosmic/07.jpg',
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+    SystemChrome.setPreferredOrientations([]);
+  }
+
+  @override
+  void dispose() {
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    super.dispose();
+  }
 
   void _openGallery(BuildContext context, String title, List<String> paths) {
     Navigator.push(
@@ -75,7 +90,7 @@ class HubScreen extends StatelessWidget {
         onTap: () => Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (_) => ExperienceScreen(preferences: preferences),
+            builder: (_) => ExperienceScreen(preferences: widget.preferences),
           ),
         ),
         child: Container(
@@ -124,7 +139,6 @@ class HubScreen extends StatelessWidget {
         Expanded(
           child: Row(
             children: [
-              // Left: title
               SizedBox(
                 width: 140,
                 child: Center(
@@ -139,32 +153,42 @@ class HubScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              // Right: 4 tiles
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.all(20),
                   child: Row(
                     children: [
-                      Expanded(child: _HubTile(
-                        label: 'Intricate', sublabel: 'The Small',
+                      Expanded(
+                          child: _HubTile(
+                        label: 'Intricate',
+                        sublabel: 'The Small',
                         icon: Icons.biotech,
-                        onTap: () => _openGallery(context, 'Intricate', _intricatePaths),
+                        onTap: () => _openGallery(
+                            context, 'Intricate', _intricatePaths),
                       )),
                       const SizedBox(width: 12),
-                      Expanded(child: _HubTile(
-                        label: 'Majestic', sublabel: 'The Grand',
+                      Expanded(
+                          child: _HubTile(
+                        label: 'Majestic',
+                        sublabel: 'The Grand',
                         icon: Icons.landscape,
-                        onTap: () => _openGallery(context, 'Majestic', _majesticPaths),
+                        onTap: () =>
+                            _openGallery(context, 'Majestic', _majesticPaths),
                       )),
                       const SizedBox(width: 12),
-                      Expanded(child: _HubTile(
-                        label: 'Cosmic', sublabel: 'The Infinite',
+                      Expanded(
+                          child: _HubTile(
+                        label: 'Cosmic',
+                        sublabel: 'The Infinite',
                         icon: Icons.stars,
-                        onTap: () => _openGallery(context, 'Cosmic', _cosmicPaths),
+                        onTap: () =>
+                            _openGallery(context, 'Cosmic', _cosmicPaths),
                       )),
                       const SizedBox(width: 12),
-                      Expanded(child: _HubTile(
-                        label: 'Stars\nSimulation', sublabel: 'The Sky',
+                      Expanded(
+                          child: _HubTile(
+                        label: 'Stars\nSimulation',
+                        sublabel: 'The Sky',
                         icon: Icons.scatter_plot,
                         onTap: () => _openStars(context),
                       )),
@@ -203,16 +227,22 @@ class HubScreen extends StatelessWidget {
                 Expanded(
                   child: Row(
                     children: [
-                      Expanded(child: _HubTile(
-                        label: 'Intricate', sublabel: 'The Small',
+                      Expanded(
+                          child: _HubTile(
+                        label: 'Intricate',
+                        sublabel: 'The Small',
                         icon: Icons.biotech,
-                        onTap: () => _openGallery(context, 'Intricate', _intricatePaths),
+                        onTap: () => _openGallery(
+                            context, 'Intricate', _intricatePaths),
                       )),
                       const SizedBox(width: 12),
-                      Expanded(child: _HubTile(
-                        label: 'Majestic', sublabel: 'The Grand',
+                      Expanded(
+                          child: _HubTile(
+                        label: 'Majestic',
+                        sublabel: 'The Grand',
                         icon: Icons.landscape,
-                        onTap: () => _openGallery(context, 'Majestic', _majesticPaths),
+                        onTap: () =>
+                            _openGallery(context, 'Majestic', _majesticPaths),
                       )),
                     ],
                   ),
@@ -221,14 +251,19 @@ class HubScreen extends StatelessWidget {
                 Expanded(
                   child: Row(
                     children: [
-                      Expanded(child: _HubTile(
-                        label: 'Cosmic', sublabel: 'The Infinite',
+                      Expanded(
+                          child: _HubTile(
+                        label: 'Cosmic',
+                        sublabel: 'The Infinite',
                         icon: Icons.stars,
-                        onTap: () => _openGallery(context, 'Cosmic', _cosmicPaths),
+                        onTap: () =>
+                            _openGallery(context, 'Cosmic', _cosmicPaths),
                       )),
                       const SizedBox(width: 12),
-                      Expanded(child: _HubTile(
-                        label: 'Stars\nSimulation', sublabel: 'The Sky',
+                      Expanded(
+                          child: _HubTile(
+                        label: 'Stars\nSimulation',
+                        sublabel: 'The Sky',
                         icon: Icons.scatter_plot,
                         onTap: () => _openStars(context),
                       )),
@@ -250,54 +285,49 @@ class _HubTile extends StatelessWidget {
   final String sublabel;
   final IconData icon;
   final VoidCallback? onTap;
-  final bool muted;
-
   const _HubTile({
     required this.label,
     required this.sublabel,
     required this.icon,
     required this.onTap,
-    this.muted = false,
   });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-        onTap: onTap,
-        child: Opacity(
-          opacity: muted ? 0.4 : 1.0,
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.04),
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(icon, color: Colors.white38, size: 32),
-                const SizedBox(height: 14),
-                Text(
-                  label,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w300,
-                    height: 1.4,
-                  ),
+      onTap: onTap,
+      child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.04),
+            borderRadius: BorderRadius.circular(10),
+            border:
+                Border.all(color: Colors.white.withValues(alpha: 0.08)),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, color: Colors.white38, size: 32),
+              const SizedBox(height: 14),
+              Text(
+                label,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w300,
+                  height: 1.4,
                 ),
-                const SizedBox(height: 6),
-                Text(
-                  sublabel,
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.3),
-                    fontSize: 11,
-                    letterSpacing: 0.3,
-                  ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                sublabel,
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.3),
+                  fontSize: 11,
+                  letterSpacing: 0.3,
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
     );

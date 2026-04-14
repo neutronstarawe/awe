@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'core/app_preferences.dart';
-import 'screens/splash_screen.dart';
-import 'screens/hub_screen.dart';
+import 'screens/launch_screen.dart';
 
 class AweApp extends StatefulWidget {
   final AppPreferences? preferences;
@@ -50,9 +49,12 @@ class _AweAppState extends State<AweApp> {
       theme: ThemeData.dark().copyWith(
         scaffoldBackgroundColor: Colors.black,
       ),
-      home: _hasSeenIntro
-          ? HubScreen(preferences: _preferences)
-          : SplashScreen(preferences: _preferences),
+      // LaunchScreen is always shown on every app open.
+      // It routes to SplashScreen (first time) or HubScreen (returning users).
+      home: LaunchScreen(
+        preferences: _preferences,
+        hasSeenIntro: _hasSeenIntro,
+      ),
     );
   }
 }
