@@ -6,13 +6,14 @@ import '../stars/star_catalog.dart';
 import '../stars/sky_orientation.dart';
 import '../stars/sky_projection.dart';
 import '../stars/sky_painter.dart';
-import '../stars/astronomy.dart';
 
 class StarsScreen extends StatefulWidget {
-  final StarCatalog catalog;
-  final SkyOrientationSource orientationSource;
-  final double? observerLat; // radians; if provided, skips GPS
-  final double? observerLng; // radians; if provided, skips GPS
+  final StarCatalog             catalog;
+  final SkyOrientationSource    orientationSource;
+
+  /// Optional override for testing — skips GPS when both are provided.
+  final double? observerLat; // radians
+  final double? observerLng; // radians
 
   const StarsScreen({
     super.key,
@@ -28,18 +29,16 @@ class StarsScreen extends StatefulWidget {
 
 class _StarsScreenState extends State<StarsScreen>
     with SingleTickerProviderStateMixin {
-  SkyOrientation _orientation = const SkyOrientation(azimuth: 0, altitude: 0);
-  double _latRad = 0.0;
-  double _lngRad = 0.0;
+
+  PhonePointing _pointing = PhonePointing.defaultPointing;
   bool _locationReady = false;
   String? _error;
-  StreamSubscription<SkyOrientation>? _orientationSub;
 
-  // Twinkle animation
+  StreamSubscription<PhonePointing>? _orientationSub;
   late final AnimationController _twinkleController;
 
-  // FOV controlled by pinch-to-zoom (in radians, half-angle)
-  double _fovRadians = 35 * pi / 180;
+  // FOV controlled by pinch-to-zoom (half-angle, radians).
+  double  _fovRadians = 35 * pi / 180;
   static const _minFov = 10 * pi / 180;
   static const _maxFov = 70 * pi / 180;
   double? _pinchStartFov;
@@ -47,28 +46,25 @@ class _StarsScreenState extends State<StarsScreen>
   @override
   void initState() {
     super.initState();
-    _orientationSub = widget.orientationSource.stream.listen(_onOrientation);
+    _orientationSub = widget.orientationSource.stream.listen(_onPointing);
     _initLocation();
 
-    // Twinkle: slow repeating animation — drives shimmer via CustomPainter
-    // repaint Listenable so only the canvas repaints, not the widget tree.
+    // Twinkle: drives shimmer via CustomPainter repaint Listenable.
     _twinkleController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 4),
     )..repeat();
   }
 
-  void _onOrientation(SkyOrientation o) {
-    if (mounted) setState(() => _orientation = o);
+  void _onPointing(PhonePointing p) {
+    if (mounted) setState(() => _pointing = p);
   }
 
-Future<void> _initLocation() async {
+  Future<void> _initLocation() async {
     if (widget.observerLat != null && widget.observerLng != null) {
-      setState(() {
-        _latRad = widget.observerLat!;
-        _lngRad = widget.observerLng!;
-        _locationReady = true;
-      });
+      widget.orientationSource.setLocation(
+          widget.observerLat!, widget.observerLng!);
+      if (mounted) setState(() => _locationReady = true);
       return;
     }
 
@@ -85,11 +81,11 @@ Future<void> _initLocation() async {
 
       final pos = await Geolocator.getCurrentPosition();
       if (mounted) {
-        setState(() {
-          _latRad = pos.latitude * pi / 180;
-          _lngRad = pos.longitude * pi / 180;
-          _locationReady = true;
-        });
+        widget.orientationSource.setLocation(
+          pos.latitude  * pi / 180,
+          pos.longitude * pi / 180,
+        );
+        setState(() => _locationReady = true);
       }
     } catch (e) {
       if (mounted) setState(() => _error = 'Could not get location: $e');
@@ -120,28 +116,24 @@ Future<void> _initLocation() async {
         onScaleStart: (_) => _pinchStartFov = _fovRadians,
         onScaleUpdate: (details) {
           if (details.pointerCount < 2) return;
-          final newFov = (_pinchStartFov! / details.scale)
-              .clamp(_minFov, _maxFov);
+          final newFov = (_pinchStartFov! / details.scale).clamp(_minFov, _maxFov);
           if (mounted) setState(() => _fovRadians = newFov);
         },
         child: LayoutBuilder(
           builder: (context, constraints) {
             final size = Size(constraints.maxWidth, constraints.maxHeight);
-            final lst = localSiderealTime(_lngRad, DateTime.now().toUtc());
             final projection = SkyProjection(
-              centerAz: _orientation.azimuth,
-              centerAlt: _orientation.altitude,
-              fovRadians: _fovRadians,
-              screenSize: size,
+              lineOfSight: _pointing.lineOfSight,
+              screenUp:    _pointing.screenUp,
+              fovRadians:  _fovRadians,
+              screenSize:  size,
             );
             final painter = SkyPainter(
-              stars: widget.catalog.starsVisibleToNakedEye(),
+              stars:          widget.catalog.starsVisibleToNakedEye(),
               constellations: widget.catalog.constellations,
-              starById: widget.catalog.byId,
-              observerLat: _latRad,
-              lst: lst,
-              projection: projection,
-              twinkle: _twinkleController,
+              starById:       widget.catalog.byId,
+              projection:     projection,
+              twinkle:        _twinkleController,
             );
             return CustomPaint(painter: painter, size: size);
           },
