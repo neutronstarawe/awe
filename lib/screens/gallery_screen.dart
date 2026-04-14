@@ -17,22 +17,20 @@ class GalleryScreen extends StatefulWidget {
 }
 
 class _GalleryScreenState extends State<GalleryScreen>
-    with TickerProviderStateMixin {
-  // Phone-rotation prompt
+    with SingleTickerProviderStateMixin {
+  // Phone-rotation animation controller — 3 s per portrait→landscape→portrait cycle.
   late final AnimationController _rotateCtrl;
   late final Animation<double> _phoneAngle;
 
-  // Prompt fade-out
-  late final AnimationController _promptFadeCtrl;
-  late final Animation<double> _promptOpacity;
+  // Driven by Future.delayed — much more reliable than chaining AnimationControllers.
+  double _promptOpacity = 0.0;
 
   @override
   void initState() {
     super.initState();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
 
-    // Phone rocks portrait (0°) → landscape (−90°) → back, 3 s per full cycle.
-    // Each cycle: 1.2 s rotate → 0.6 s hold → 1.2 s rotate back.
+    // Rotation: 1.2 s rotate to landscape → 0.6 s hold → 1.2 s rotate back.
     _rotateCtrl = AnimationController(
         vsync: this, duration: const Duration(milliseconds: 3000));
     _phoneAngle = TweenSequence<double>([
@@ -48,27 +46,27 @@ class _GalleryScreenState extends State<GalleryScreen>
     ]).animate(_rotateCtrl);
     _rotateCtrl.repeat();
 
-    // Prompt: fade in (0.5 s) → hold (5 s showing 1-2 full cycles) → fade out (1 s).
-    _promptFadeCtrl = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 6500));
-    _promptOpacity = TweenSequence<double>([
-      TweenSequenceItem(
-          tween: Tween(begin: 0.0, end: 1.0)
-              .chain(CurveTween(curve: Curves.easeIn)),
-          weight: 8),
-      TweenSequenceItem(tween: ConstantTween(1.0), weight: 77),
-      TweenSequenceItem(
-          tween: Tween(begin: 1.0, end: 0.0)
-              .chain(CurveTween(curve: Curves.easeOut)),
-          weight: 15),
-    ]).animate(_promptFadeCtrl);
-    _promptFadeCtrl.forward().whenComplete(_rotateCtrl.stop);
+    // Fade in on the first frame, then hold, then fade out.
+    // Using post-frame callback + Future.delayed avoids the
+    // AnimationController chaining issues that were causing early dismissal.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) setState(() => _promptOpacity = 1.0); // triggers 600 ms fade-in
+
+      // After 8 s visible, start the fade-out.
+      Future.delayed(const Duration(seconds: 8), () {
+        if (mounted) setState(() => _promptOpacity = 0.0); // triggers 800 ms fade-out
+      });
+
+      // Stop the rotation after the fade-out completes.
+      Future.delayed(const Duration(milliseconds: 8800), () {
+        if (mounted) _rotateCtrl.stop();
+      });
+    });
   }
 
   @override
   void dispose() {
     _rotateCtrl.dispose();
-    _promptFadeCtrl.dispose();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     super.dispose();
   }
@@ -91,7 +89,7 @@ class _GalleryScreenState extends State<GalleryScreen>
             )
           : Stack(
               children: [
-                // Image gallery
+                // ── Image gallery ─────────────────────────────────────────
                 PageView.builder(
                   itemCount: widget.imagePaths.length,
                   itemBuilder: (context, index) {
@@ -102,27 +100,30 @@ class _GalleryScreenState extends State<GalleryScreen>
                         child: Image.asset(
                           widget.imagePaths[index],
                           fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Center(
-                              child: Icon(
-                                Icons.broken_image_outlined,
-                                color: Colors.white.withValues(alpha: 0.2),
-                                size: 48,
-                              ),
-                            );
-                          },
+                          errorBuilder: (_, __, ___) => Center(
+                            child: Icon(
+                              Icons.broken_image_outlined,
+                              color: Colors.white.withValues(alpha: 0.2),
+                              size: 48,
+                            ),
+                          ),
                         ),
                       ),
                     );
                   },
                 ),
 
-                // Rotate-phone prompt — bottom-right corner
+                // ── Rotate-phone prompt — bottom-right corner ─────────────
+                // AnimatedOpacity is driven by _promptOpacity toggled via
+                // Future.delayed so the timing is guaranteed by the Dart event
+                // loop, not by animation controller chaining.
                 Positioned(
                   bottom: 28,
                   right: 24,
-                  child: FadeTransition(
+                  child: AnimatedOpacity(
                     opacity: _promptOpacity,
+                    duration: const Duration(milliseconds: 700),
+                    curve: Curves.easeInOut,
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -132,8 +133,8 @@ class _GalleryScreenState extends State<GalleryScreen>
                             angle: _phoneAngle.value,
                             child: Icon(
                               Icons.stay_current_portrait,
-                              color: Colors.white.withValues(alpha: 0.6),
-                              size: 32,
+                              color: Colors.white.withValues(alpha: 0.65),
+                              size: 34,
                             ),
                           ),
                         ),
@@ -142,7 +143,7 @@ class _GalleryScreenState extends State<GalleryScreen>
                           'Rotate for full\nexperience',
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.45),
+                            color: Colors.white.withValues(alpha: 0.5),
                             fontSize: 10,
                             fontWeight: FontWeight.w300,
                             height: 1.5,
