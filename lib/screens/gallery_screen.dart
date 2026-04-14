@@ -31,9 +31,10 @@ class _GalleryScreenState extends State<GalleryScreen>
     super.initState();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
 
-    // Phone rocks from portrait (0°) → landscape (−90°) → back, 1.8 s per cycle.
+    // Phone rocks portrait (0°) → landscape (−90°) → back, 3 s per full cycle.
+    // Each cycle: 1.2 s rotate → 0.6 s hold → 1.2 s rotate back.
     _rotateCtrl = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 1800));
+        vsync: this, duration: const Duration(milliseconds: 3000));
     _phoneAngle = TweenSequence<double>([
       TweenSequenceItem(
           tween: Tween(begin: 0.0, end: -pi / 2)
@@ -47,19 +48,19 @@ class _GalleryScreenState extends State<GalleryScreen>
     ]).animate(_rotateCtrl);
     _rotateCtrl.repeat();
 
-    // Prompt: fade in (0.4 s) → hold (3 s) → fade out (1 s) = 4.4 s total.
+    // Prompt: fade in (0.5 s) → hold (5 s showing 1-2 full cycles) → fade out (1 s).
     _promptFadeCtrl = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 4400));
+        vsync: this, duration: const Duration(milliseconds: 6500));
     _promptOpacity = TweenSequence<double>([
       TweenSequenceItem(
           tween: Tween(begin: 0.0, end: 1.0)
               .chain(CurveTween(curve: Curves.easeIn)),
-          weight: 9),
-      TweenSequenceItem(tween: ConstantTween(1.0), weight: 68),
+          weight: 8),
+      TweenSequenceItem(tween: ConstantTween(1.0), weight: 77),
       TweenSequenceItem(
           tween: Tween(begin: 1.0, end: 0.0)
               .chain(CurveTween(curve: Curves.easeOut)),
-          weight: 23),
+          weight: 15),
     ]).animate(_promptFadeCtrl);
     _promptFadeCtrl.forward().whenComplete(_rotateCtrl.stop);
   }

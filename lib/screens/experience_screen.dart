@@ -21,12 +21,13 @@ class ExperienceScreen extends StatefulWidget {
 class _ExperienceScreenState extends State<ExperienceScreen>
     with SingleTickerProviderStateMixin {
   late final VideoPlayerController _controller;
-  bool _initialized = false;
+  bool _videoReady = false;
   bool _completeCalled = false;
 
-  // Headphones / volume prompt
+  // Headphones prompt shown on black for 1.5 s, then fades out over 0.5 s.
   late final AnimationController _promptCtrl;
   late final Animation<double> _promptFade;
+  bool _promptVisible = true;
 
   @override
   void initState() {
@@ -37,21 +38,21 @@ class _ExperienceScreenState extends State<ExperienceScreen>
     ]);
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
 
-    // Prompt: fade in (0.8 s) → hold (3.5 s) → fade out (0.7 s) = 5 s total
+    // Prompt: hold (1.5 s) → fade out (0.5 s) = 2 s total.
     _promptCtrl = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 5000));
+        vsync: this, duration: const Duration(milliseconds: 2000));
     _promptFade = TweenSequence<double>([
-      TweenSequenceItem(
-          tween: Tween(begin: 0.0, end: 1.0)
-              .chain(CurveTween(curve: Curves.easeIn)),
-          weight: 16),
-      TweenSequenceItem(tween: ConstantTween(1.0), weight: 70),
+      TweenSequenceItem(tween: ConstantTween(1.0), weight: 75),
       TweenSequenceItem(
           tween: Tween(begin: 1.0, end: 0.0)
               .chain(CurveTween(curve: Curves.easeOut)),
-          weight: 14),
+          weight: 25),
     ]).animate(_promptCtrl);
+    _promptCtrl.forward().whenComplete(() {
+      if (mounted) setState(() => _promptVisible = false);
+    });
 
+    // Load the video in parallel — it will be hidden behind the prompt overlay.
     _controller =
         VideoPlayerController.asset('assets/video/the_experience.mp4');
     _initVideo();
@@ -61,10 +62,10 @@ class _ExperienceScreenState extends State<ExperienceScreen>
     try {
       await _controller.initialize();
       _controller.addListener(_onVideoUpdate);
-      if (mounted) setState(() => _initialized = true);
-      await _controller.play();
-      // Start the headphones prompt once playback begins.
-      if (mounted) _promptCtrl.forward();
+      if (mounted) {
+        setState(() => _videoReady = true);
+        await _controller.play();
+      }
     } catch (_) {
       _onComplete();
     }
@@ -84,12 +85,10 @@ class _ExperienceScreenState extends State<ExperienceScreen>
   void _onComplete() {
     if (_completeCalled) return;
     _completeCalled = true;
-
     if (widget.onVideoComplete != null) {
       widget.onVideoComplete!();
       return;
     }
-
     _navigateToCredits();
   }
 
@@ -121,53 +120,57 @@ class _ExperienceScreenState extends State<ExperienceScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      body: _initialized
-          ? Stack(
-              children: [
-                // Video — covers the full screen.
-                SizedBox.expand(
-                  child: FittedBox(
-                    fit: BoxFit.cover,
-                    child: SizedBox(
-                      width: _controller.value.size.width,
-                      height: _controller.value.size.height,
-                      child: VideoPlayer(_controller),
-                    ),
-                  ),
+      body: Stack(
+        children: [
+          // ── Video layer ────────────────────────────────────────────────
+          if (_videoReady)
+            SizedBox.expand(
+              child: FittedBox(
+                fit: BoxFit.cover,
+                child: SizedBox(
+                  width: _controller.value.size.width,
+                  height: _controller.value.size.height,
+                  child: VideoPlayer(_controller),
                 ),
-                // Headphones prompt — bottom-centre, fades after 5 s.
-                Positioned(
-                  bottom: 28,
-                  left: 0,
-                  right: 0,
-                  child: FadeTransition(
-                    opacity: _promptFade,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.headphones,
-                          color: Colors.white.withValues(alpha: 0.55),
-                          size: 18,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Increase volume for the full experience',
-                          style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.55),
-                            fontSize: 12,
-                            fontWeight: FontWeight.w300,
-                            letterSpacing: 0.6,
-                          ),
-                        ),
-                      ],
+              ),
+            ),
+
+          // ── Headphones prompt — black overlay shown before video ───────
+          // Stays on top until the 2 s animation completes.
+          if (_promptVisible)
+            AnimatedBuilder(
+              animation: _promptFade,
+              builder: (_, child) => Opacity(
+                opacity: _promptFade.value,
+                child: child,
+              ),
+              child: Container(
+                color: Colors.black,
+                alignment: Alignment.center,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.headphones,
+                      color: Colors.white.withValues(alpha: 0.65),
+                      size: 22,
                     ),
-                  ),
+                    const SizedBox(width: 10),
+                    Text(
+                      'Increase volume for the full experience',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.65),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w300,
+                        letterSpacing: 0.6,
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            )
-          : const Center(
-              child: CircularProgressIndicator(color: Colors.white24)),
+              ),
+            ),
+        ],
+      ),
     );
   }
 }

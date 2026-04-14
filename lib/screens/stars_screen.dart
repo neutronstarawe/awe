@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import '../stars/star_catalog.dart';
 import '../stars/sky_orientation.dart';
@@ -46,6 +47,7 @@ class _StarsScreenState extends State<StarsScreen>
   @override
   void initState() {
     super.initState();
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
     _orientationSub = widget.orientationSource.stream.listen(_onPointing);
     _initLocation();
 
@@ -147,6 +149,7 @@ class _StarsScreenState extends State<StarsScreen>
     _twinkleController.dispose();
     _orientationSub?.cancel();
     widget.orientationSource.dispose();
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     super.dispose();
   }
 }

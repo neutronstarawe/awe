@@ -3,9 +3,12 @@ import 'package:flutter/services.dart';
 import '../core/app_preferences.dart';
 import 'hub_screen.dart';
 
-/// End-credits screen shown after the experience video completes.
-/// The text scrolls from bottom to top, cinema-style, then transitions
-/// to the hub. Tap anywhere to skip.
+/// Cinema-style end-credits screen.
+///
+/// Starts with a pure black screen. The text is placed entirely below the
+/// visible area and scrolls upward at a steady pace until the last line
+/// exits from the top of the screen — then the app navigates to the hub.
+/// Tap anywhere to skip.
 class CreditsScreen extends StatefulWidget {
   final AppPreferences preferences;
 
@@ -15,12 +18,12 @@ class CreditsScreen extends StatefulWidget {
   State<CreditsScreen> createState() => _CreditsScreenState();
 }
 
-class _CreditsScreenState extends State<CreditsScreen>
-    with SingleTickerProviderStateMixin {
+class _CreditsScreenState extends State<CreditsScreen> {
   late final ScrollController _scrollCtrl;
-  late final AnimationController _fadeCtrl;
-  late final Animation<double> _fadeIn;
   bool _navigating = false;
+
+  // 60 px / s → comfortable credits reading pace.
+  static const double _scrollSpeed = 55.0;
 
   static const _creditsText =
       'What you\'re likely feeling right now is awe. It is the emotion we '
@@ -42,7 +45,6 @@ class _CreditsScreenState extends State<CreditsScreen>
   @override
   void initState() {
     super.initState();
-    // Stay in landscape + immersive, matching the video that preceded this screen.
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.landscapeLeft,
       DeviceOrientation.landscapeRight,
@@ -51,36 +53,29 @@ class _CreditsScreenState extends State<CreditsScreen>
 
     _scrollCtrl = ScrollController();
 
-    // Fade the text in before scrolling starts.
-    _fadeCtrl = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 1500));
-    _fadeIn =
-        CurvedAnimation(parent: _fadeCtrl, curve: Curves.easeIn);
-    _fadeCtrl.forward();
-
-    // Wait for the first frame so maxScrollExtent is available, then scroll.
+    // After layout the scroll position is available; kick off the animation.
     WidgetsBinding.instance.addPostFrameCallback((_) => _startScroll());
   }
 
   Future<void> _startScroll() async {
     if (!mounted) return;
 
-    // Brief pause while text fades in.
-    await Future.delayed(const Duration(milliseconds: 2000));
-    if (!mounted || _navigating) return;
-
+    // maxScrollExtent == screenHeight (top spacer) + textHeight + screenHeight
+    //                    (bottom spacer) − viewportHeight
+    //                 == screenHeight + textHeight
+    // Scrolling all the way to maxScrollExtent means:
+    //   • At 0: black screen (top spacer fills viewport — text is below).
+    //   • At maxExtent: black screen (bottom spacer — text has fully exited top).
     final maxExtent = _scrollCtrl.position.maxScrollExtent;
+    final durationMs = (maxExtent / _scrollSpeed * 1000).round();
 
-    // ~40 s total scroll — comfortable reading pace for credits.
     await _scrollCtrl.animateTo(
       maxExtent,
-      duration: const Duration(seconds: 40),
+      duration: Duration(milliseconds: durationMs),
       curve: Curves.linear,
     );
 
-    // Linger at the end before transitioning.
     if (!mounted || _navigating) return;
-    await Future.delayed(const Duration(seconds: 3));
     _navigateToHub();
   }
 
@@ -104,38 +99,52 @@ class _CreditsScreenState extends State<CreditsScreen>
   @override
   void dispose() {
     _scrollCtrl.dispose();
-    _fadeCtrl.dispose();
     SystemChrome.setPreferredOrientations([]);
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    // The screen height drives the two spacers so that:
+    //   • scroll = 0   → only the top spacer is visible (pure black).
+    //   • scroll = max → only the bottom spacer is visible (pure black).
+    // Text enters from the bottom and exits through the top.
+    final screenH = MediaQuery.of(context).size.height;
+
     return Scaffold(
       backgroundColor: Colors.black,
       body: GestureDetector(
         onTap: _navigateToHub,
         behavior: HitTestBehavior.opaque,
-        child: FadeTransition(
-          opacity: _fadeIn,
-          child: Center(
-            child: SingleChildScrollView(
-              controller: _scrollCtrl,
-              physics: const NeverScrollableScrollPhysics(),
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 64, vertical: 100),
-              child: const Text(
-                _creditsText,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Color(0xAAFFFFFF),
-                  fontSize: 15,
-                  fontWeight: FontWeight.w300,
-                  height: 2.0,
-                  letterSpacing: 0.4,
+        child: SingleChildScrollView(
+          controller: _scrollCtrl,
+          // NeverScrollableScrollPhysics blocks touch-driven scrolling;
+          // programmatic animateTo() still works.
+          physics: const NeverScrollableScrollPhysics(),
+          child: Column(
+            children: [
+              // ── Top spacer: fills the viewport so the screen starts black ──
+              SizedBox(height: screenH),
+
+              // ── Credits text ───────────────────────────────────────────────
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 52),
+                child: Text(
+                  _creditsText,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Color(0xAAFFFFFF),
+                    fontSize: 15,
+                    fontWeight: FontWeight.w300,
+                    height: 2.1,
+                    letterSpacing: 0.4,
+                  ),
                 ),
               ),
-            ),
+
+              // ── Bottom spacer: gives the last line room to scroll off-screen ──
+              SizedBox(height: screenH),
+            ],
           ),
         ),
       ),
