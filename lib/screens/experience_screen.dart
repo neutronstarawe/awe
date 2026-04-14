@@ -36,7 +36,6 @@ class _ExperienceScreenState extends State<ExperienceScreen>
       DeviceOrientation.landscapeLeft,
       DeviceOrientation.landscapeRight,
     ]);
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
 
     // Prompt: hold (1.5 s) → fade out (0.5 s) = 2 s total.
     _promptCtrl = AnimationController(
@@ -112,7 +111,6 @@ class _ExperienceScreenState extends State<ExperienceScreen>
     _controller.dispose();
     _promptCtrl.dispose();
     SystemChrome.setPreferredOrientations([]);
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     super.dispose();
   }
 

@@ -47,7 +47,6 @@ class _StarsScreenState extends State<StarsScreen>
   @override
   void initState() {
     super.initState();
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
     _orientationSub = widget.orientationSource.stream.listen(_onPointing);
     _initLocation();
 
@@ -149,7 +148,6 @@ class _StarsScreenState extends State<StarsScreen>
     _twinkleController.dispose();
     _orientationSub?.cancel();
     widget.orientationSource.dispose();
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     super.dispose();
   }
 }

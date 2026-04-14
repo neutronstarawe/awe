@@ -29,8 +29,6 @@ class _LaunchScreenState extends State<LaunchScreen>
   @override
   void initState() {
     super.initState();
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
-
     // fade in (1 s) → hold (1 s) → fade out (1 s) = 3 s total
     _ctrl = AnimationController(
         vsync: this, duration: const Duration(seconds: 3));

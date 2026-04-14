@@ -28,8 +28,6 @@ class _GalleryScreenState extends State<GalleryScreen>
   @override
   void initState() {
     super.initState();
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
-
     // Rotation: 1.2 s rotate to landscape → 0.6 s hold → 1.2 s rotate back.
     _rotateCtrl = AnimationController(
         vsync: this, duration: const Duration(milliseconds: 3000));
@@ -67,7 +65,6 @@ class _GalleryScreenState extends State<GalleryScreen>
   @override
   void dispose() {
     _rotateCtrl.dispose();
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     super.dispose();
   }
 
@@ -100,6 +97,8 @@ class _GalleryScreenState extends State<GalleryScreen>
                         child: Image.asset(
                           widget.imagePaths[index],
                           fit: BoxFit.cover,
+                          width: double.infinity,
+                          height: double.infinity,
                           errorBuilder: (_, __, ___) => Center(
                             child: Icon(
                               Icons.broken_image_outlined,
@@ -113,47 +112,55 @@ class _GalleryScreenState extends State<GalleryScreen>
                   },
                 ),
 
-                // ── Rotate-phone prompt — bottom-right corner ─────────────
-                // AnimatedOpacity is driven by _promptOpacity toggled via
-                // Future.delayed so the timing is guaranteed by the Dart event
-                // loop, not by animation controller chaining.
-                Positioned(
-                  bottom: 28,
-                  right: 24,
-                  child: AnimatedOpacity(
-                    opacity: _promptOpacity,
-                    duration: const Duration(milliseconds: 700),
-                    curve: Curves.easeInOut,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        AnimatedBuilder(
-                          animation: _phoneAngle,
-                          builder: (_, __) => Transform.rotate(
-                            angle: _phoneAngle.value,
-                            child: Icon(
-                              Icons.stay_current_portrait,
-                              color: Colors.white.withValues(alpha: 0.65),
-                              size: 34,
+                // ── Rotate-phone prompt — top-left, portrait only ──────────
+                // Hidden in landscape (user already rotated) and driven by
+                // _promptOpacity via Future.delayed for reliable timing.
+                if (MediaQuery.of(context).orientation == Orientation.portrait)
+                  Positioned(
+                    top: 28,
+                    left: 20,
+                    child: AnimatedOpacity(
+                      opacity: _promptOpacity,
+                      duration: const Duration(milliseconds: 700),
+                      curve: Curves.easeInOut,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.45),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            AnimatedBuilder(
+                              animation: _phoneAngle,
+                              builder: (_, __) => Transform.rotate(
+                                angle: _phoneAngle.value,
+                                child: Icon(
+                                  Icons.stay_current_portrait,
+                                  color: Colors.white.withValues(alpha: 0.85),
+                                  size: 34,
+                                ),
+                              ),
                             ),
-                          ),
+                            const SizedBox(height: 6),
+                            Text(
+                              'Rotate for full\nexperience',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.75),
+                                fontSize: 10,
+                                fontWeight: FontWeight.w300,
+                                height: 1.5,
+                                letterSpacing: 0.3,
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 6),
-                        Text(
-                          'Rotate for full\nexperience',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.5),
-                            fontSize: 10,
-                            fontWeight: FontWeight.w300,
-                            height: 1.5,
-                            letterSpacing: 0.3,
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
                   ),
-                ),
               ],
             ),
     );

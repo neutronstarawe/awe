@@ -28,7 +28,7 @@ class _HubScreenState extends State<HubScreen> {
   ];
 
   static const _majesticPaths = <String>[
-    'assets/images/majestic/01.png',
+    'assets/images/majestic/01.jpg',
     'assets/images/majestic/02.jpg',
     'assets/images/majestic/03.webp',
     'assets/images/majestic/04.jpg',
@@ -50,14 +50,7 @@ class _HubScreenState extends State<HubScreen> {
   @override
   void initState() {
     super.initState();
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
     SystemChrome.setPreferredOrientations([]);
-  }
-
-  @override
-  void dispose() {
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-    super.dispose();
   }
 
   void _openGallery(BuildContext context, String title, List<String> paths) {
@@ -85,7 +78,7 @@ class _HubScreenState extends State<HubScreen> {
 
   Widget _reliveButton(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 20),
+      padding: const EdgeInsets.only(bottom: 32),
       child: GestureDetector(
         onTap: () => Navigator.push(
           context,
@@ -208,7 +201,7 @@ class _HubScreenState extends State<HubScreen> {
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(vertical: 36),
+          padding: const EdgeInsets.only(top: 16, bottom: 12),
           child: Text(
             'awe',
             style: TextStyle(

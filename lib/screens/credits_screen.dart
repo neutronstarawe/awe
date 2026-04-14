@@ -22,8 +22,8 @@ class _CreditsScreenState extends State<CreditsScreen> {
   late final ScrollController _scrollCtrl;
   bool _navigating = false;
 
-  // 60 px / s → comfortable credits reading pace.
-  static const double _scrollSpeed = 55.0;
+  // ~17 px / s → slow cinematic credits pace.
+  static const double _scrollSpeed = 17.0;
 
   static const _creditsText =
       'What you\'re likely feeling right now is awe. It is the emotion we '
@@ -49,7 +49,6 @@ class _CreditsScreenState extends State<CreditsScreen> {
       DeviceOrientation.landscapeLeft,
       DeviceOrientation.landscapeRight,
     ]);
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
 
     _scrollCtrl = ScrollController();
 
