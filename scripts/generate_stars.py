@@ -29,6 +29,13 @@ for row in reader:
     name = row.get("proper", "").strip()
     if name:
         entry["name"] = name
+    # B-V color index for star color rendering (Stellarium-style)
+    ci = row.get("ci", "").strip()
+    if ci:
+        try:
+            entry["bv"] = round(float(ci), 3)
+        except ValueError:
+            pass
     stars.append(entry)
 
 stars.sort(key=lambda s: s["mag"])
