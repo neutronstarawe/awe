@@ -6,6 +6,7 @@ import 'experience_screen.dart';
 import '../stars/star_catalog.dart';
 import '../stars/sky_orientation.dart';
 import 'stars_screen.dart';
+import 'features_screen.dart';
 
 class HubScreen extends StatefulWidget {
   final AppPreferences preferences;
@@ -17,6 +18,7 @@ class HubScreen extends StatefulWidget {
 }
 
 class _HubScreenState extends State<HubScreen> {
+  final _pageCtrl = PageController();
   static const _intricatePaths = <String>[
     'assets/images/intricate/01.jpg',
     'assets/images/intricate/02.jpeg',
@@ -51,6 +53,12 @@ class _HubScreenState extends State<HubScreen> {
   void initState() {
     super.initState();
     SystemChrome.setPreferredOrientations([]);
+  }
+
+  @override
+  void dispose() {
+    _pageCtrl.dispose();
+    super.dispose();
   }
 
   void _openGallery(BuildContext context, String title, List<String> paths) {
@@ -111,18 +119,24 @@ class _HubScreenState extends State<HubScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      body: SafeArea(
-        child: OrientationBuilder(
-          builder: (context, orientation) {
-            if (orientation == Orientation.landscape) {
-              return _buildLandscape(context);
-            }
-            return _buildPortrait(context);
-          },
+    return PageView(
+      controller: _pageCtrl,
+      children: [
+        Scaffold(
+          backgroundColor: Colors.black,
+          body: SafeArea(
+            child: OrientationBuilder(
+              builder: (context, orientation) {
+                if (orientation == Orientation.landscape) {
+                  return _buildLandscape(context);
+                }
+                return _buildPortrait(context);
+              },
+            ),
+          ),
         ),
-      ),
+        const FeaturesScreen(),
+      ],
     );
   }
 
@@ -268,6 +282,25 @@ class _HubScreenState extends State<HubScreen> {
           ),
         ),
         _reliveButton(context),
+        Padding(
+          padding: const EdgeInsets.only(bottom: 10),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.chevron_right,
+                  size: 14,
+                  color: Colors.white.withValues(alpha: 0.15)),
+              Text(
+                'swipe for more',
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.15),
+                  fontSize: 10,
+                  letterSpacing: 1.5,
+                ),
+              ),
+            ],
+          ),
+        ),
       ],
     );
   }

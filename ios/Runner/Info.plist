@@ -3,7 +3,9 @@
 <plist version="1.0">
 <dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>awe uses your location to show the correct stars for your position on Earth.</string>
+	<string>awe uses your location to show the correct stars for your position on Earth and to calculate local sunrise and sunset times.</string>
+	<key>NSUserNotificationUsageDescription</key>
+	<string>awe sends gentle reminders before sunset and about tomorrow's sunrise to support your circadian rhythm.</string>
 <key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>

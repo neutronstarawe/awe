@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../core/app_preferences.dart';
 import 'hub_screen.dart';
+import 'journal_entry_screen.dart';
 
 /// Cinema-style end-credits screen.
 ///
@@ -83,6 +84,8 @@ class _CreditsScreenState extends State<CreditsScreen> {
     _navigating = true;
     await widget.preferences.setHasSeenIntro(true);
     if (!mounted) return;
+    await _showJournalPrompt();
+    if (!mounted) return;
     Navigator.pushReplacement(
       context,
       PageRouteBuilder(
@@ -91,6 +94,68 @@ class _CreditsScreenState extends State<CreditsScreen> {
         transitionsBuilder: (_, animation, __, child) =>
             FadeTransition(opacity: animation, child: child),
         transitionDuration: const Duration(milliseconds: 900),
+      ),
+    );
+  }
+
+  Future<void> _showJournalPrompt() async {
+    await showDialog<void>(
+      context: context,
+      barrierColor: Colors.black87,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF0A0A0A),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        title: Text(
+          'How are you feeling?',
+          style: TextStyle(
+            color: Colors.white.withValues(alpha: 0.85),
+            fontWeight: FontWeight.w300,
+            fontSize: 17,
+            letterSpacing: 0.5,
+          ),
+        ),
+        content: Text(
+          'Take a moment to capture what this experience stirred in you.',
+          style: TextStyle(
+            color: Colors.white.withValues(alpha: 0.45),
+            fontWeight: FontWeight.w300,
+            fontSize: 13,
+            height: 1.6,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(
+              'Explore the app',
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.35),
+                fontWeight: FontWeight.w300,
+                letterSpacing: 0.5,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const JournalEntryScreen(),
+                ),
+              );
+            },
+            child: Text(
+              'Journal about it',
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.75),
+                fontWeight: FontWeight.w300,
+                letterSpacing: 0.5,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
